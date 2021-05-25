@@ -1,0 +1,79 @@
+<?xml version='1.0'?>
+
+<robot name="transportation" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:property name="wheel_height" value="-0.05"/>
+<xacro:property name="wheel_inertia_ixx" value="0.025"/>
+<xacro:property name="wheel_inertia_iyy" value="0.025"/>
+<xacro:property name="wheel_inertia_izz" value="0.025"/>
+
+<!--Shape Macros=======================================-->
+
+<!--Wheel-->
+<xacro:macro name="wheel" params="name">
+<link name="${name}">
+    <collision name="${name}_collision">
+      <origin xyz="0 0 0" rpy="0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder radius="0.1" length="0.05"/>
+      </geometry>
+    </collision>
+    <visual name="${name}_wheel_visual">
+      <origin xyz="0 0 0" rpy="0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder radius="0.1" length="0.05"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0 0 0 0"/>
+      </material>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 1.5707 1.5707"/>
+      <mass value="5"/>
+      <cylinder_inertia m="5" r="0.1" h="0.05"/>
+      <inertia
+        ixx="${wheel_inertia_ixx}" ixy="0.0" ixz="0.0"
+        iyy="${wheel_inertia_iyy}" iyz="0.0"
+        izz="${wheel_inertia_izz}"/>
+    </inertial>
+  </link>
+</xacro:macro>
+
+<!--Robot Definition-->
+<link name='base_link'>
+    <pose>0 0 0 0 0 0</pose>
+
+    <inertial>
+      <mass value="20.0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <inertia
+          ixx="0.4" ixy="0" ixz="0"
+          iyy="0.2" iyz="0"
+          izz="0.15"
+      />
+    </inertial>
+    <collision name='collision'>
+      <geometry>
+        <box size=".4 .2 .15"/>
+      </geometry>
+    </collision>
+    <visual name='base_link_visual'>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size=".4 .2 .15"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <wheel name="frontLeftWheel" />
+
+  <joint type="continuous" name="left_wheel_axle">
+    <origin  xyz="0.11 0.15 ${wheel_height}" rpy="0 0 0"/>
+    <child link="frontLeftWheel"/>
+    <parent link="base_link"/>
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+    <limit effort="100" velocity="100"/>
+    <joint_properties damping="0.0" friction="0.0"/>
+  </joint>
+
+</robot>

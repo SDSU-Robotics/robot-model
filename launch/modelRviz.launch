@@ -4,12 +4,13 @@
   <arg name="model" default="$(find robot-model)/models/excvModel.xacro"/>
   <arg name="gui" default="true" />
   <arg name="rvizconfig" default="$(find robot-model)/rviz/excvModel.rviz" />
+  <!--rvizconfig can be created by opeing a new rviz, editing setting, then saving-->
 
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
-
   <node if="$(arg gui)" name="joint_state_publisher" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" />
   <node unless="$(arg gui)" name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="false"/>
 
+	<node pkg="tf2_ros" type="static_transform_publisher" name="model" args="0 0 0 0 0 0 map chassis" />
 </launch>

@@ -1,4 +1,4 @@
-<?xml version='1.0'?>
+<?xml version='1.0' encoding="UTF-8"?>
 
 <robot name="transportation" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
@@ -49,13 +49,13 @@
     </visual>
   </link>
 
-  <wheel name="front_left" />
-  <wheel name="front_right" />
-  <wheel name="back_left" />
-  <wheel name="back_right" />
+  <xacro:wheel name="front_left" />
+  <xacro:wheel name="front_right" />
+  <xacro:wheel name="back_left" />
+  <xacro:wheel name="back_right" />
 
-  <wheel_Joint name="front_left" parent="chassis" child="front_left" z_pos="${wheel_offset}" mirror="1"/>
-  <wheel_Joint name="front_right" parent="chassis" child="front_right" z_pos="${wheel_offset}" mirror="-1"/>
-  <wheel_Joint name="back_left" parent="chassis" child="back_left" z_pos="${wheel_offset*-1}" mirror="1"/>
-  <wheel_Joint name="back_right" parent="chassis" child="back_right" z_pos="${wheel_offset*-1}" mirror="-1"/>
+  <xacro:wheel_Joint name="front_left" parent="chassis" child="front_left" z_pos="${wheel_offset}" mirror="1"/>
+  <xacro:wheel_Joint name="front_right" parent="chassis" child="front_right" z_pos="${wheel_offset}" mirror="-1"/>
+  <xacro:wheel_Joint name="back_left" parent="chassis" child="back_left" z_pos="${wheel_offset*-1}" mirror="1"/>
+  <xacro:wheel_Joint name="back_right" parent="chassis" child="back_right" z_pos="${wheel_offset*-1}" mirror="-1"/>
 </robot>

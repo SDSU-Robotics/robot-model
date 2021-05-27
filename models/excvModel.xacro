@@ -5,18 +5,21 @@
 <!--Dimension Macros=====================================-->
 <xacro:property name="wheel_height" value="-0.05"/>
 <xacro:property name="wheel_length" value="0.05"/>
+<xacro:property name="wheel_scale" value="0.004"/>
+<xacro:property name="wheel_mount_width" value="0.05"/>
 <xacro:property name="wheel_offset" value="0.11"/>
 <xacro:property name="chassis_width" value="0.2"/>
 <xacro:property name="chassis_length" value="0.4"/>
-<xacro:property name="chassis_height" value="0.15"/>
+<xacro:property name="chassis_height" value="0.05"/>
 <xacro:property name="chassis_cutout_length" value="0.1"/>
 <xacro:property name="chassis_cutout_width" value="0.05"/>
 <xacro:property name="trencher_mount_height" value="0.1"/>
 <xacro:property name="trencher_outer_length" value="0.3"/>
-<xacro:property name="trencher_inner_length" value="0.3"/>
 <xacro:property name="trencher_outer_width" value="${chassis_width-(chassis_cutout_width*2)}"/>
+<xacro:property name="trencher_outer_height" value="0.05"/>
+<xacro:property name="trencher_inner_length" value="0.3"/>
 <xacro:property name="trencher_inner_width" value="${chassis_width-(chassis_cutout_width*2)-0.025}"/>
-<xacro:property name="trencher_height" value="0.05"/>
+<xacro:property name="trencher_inner_height" value="0.045"/>
 
 <!--Color Macros========================================-->
 <xacro:property name="dark_grey" value="0.5 0.5 0.5 1"/>
@@ -24,16 +27,30 @@
 <xacro:property name="blue" value="0 0.3 0.8 1"/>
 
 <!--Shape Macros========================================-->
-<xacro:macro name="wheel" params="name">
+<xacro:macro name="wheel" params="name mirror">
 <link name="${name}">
     <visual>
-      <origin xyz="0 0 0" rpy="0 1.5707 1.5707"/>
+      <origin xyz="0 0 0" rpy="0 1.5707 ${mirror*1.5707}"/>
       <geometry>
-        <cylinder radius="0.1" length="${wheel_length}"/>
+        <!--cylinder radius="0.1" length="${wheel_length}"/-->
+          <mesh filename="file://$(find robot-model)/models/meshes/wheel.stl" scale="${wheel_scale} ${wheel_scale} ${wheel_scale}"/>
       </geometry>
       <material name="wheel_color">
-        <!--texture filename="file://$(find robot-model)/models/wheel_texture.jpeg"/-->
         <color rgba="${blue}"/>
+      </material>
+    </visual>
+  </link>
+</xacro:macro>
+
+<xacro:macro name="wheel_mount" params="name">
+<link name="${name}">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${wheel_mount_width} ${wheel_mount_width} ${wheel_height}"/>
+      </geometry>
+      <material name="wheel_mount_color">
+        <color rgba="${grey}"/>
       </material>
     </visual>
   </link>
@@ -42,10 +59,18 @@
 <!--Joint Macros========================================-->
 <xacro:macro name="wheel_Joint" params="name parent child x_pos mirror">
   <joint type="continuous" name="${name}_axle">
-    <origin  xyz="${x_pos} ${((chassis_width/2)+(wheel_length/2))*mirror} ${wheel_height}" rpy="0 0 0"/>
+    <origin  xyz="${x_pos} ${((chassis_width/2)+(wheel_length/2)+0.01)*mirror} ${wheel_height}" rpy="0 0 0"/>
     <child link="${child}"/>
     <parent link="${parent}"/>
     <axis xyz="0 1 0" rpy="0 0 0"/>
+  </joint>
+</xacro:macro>
+
+<xacro:macro name="wheel_mount_fixed" params=" name child x_pos mirror">
+  <joint type="fixed" name="${name}">
+    <origin xyz="${x_pos} ${((chassis_width/2)-(wheel_mount_width/2))*mirror} ${wheel_height}" rpy="0 0 0"/>
+    <child link="${child}"/>
+    <parent link="chassis"/>
   </joint>
 </xacro:macro>
 
@@ -91,7 +116,7 @@
     <visual>
       <origin xyz="${trencher_outer_length/2} 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="${trencher_outer_length} ${trencher_outer_width} ${trencher_height}"/>
+        <box size="${trencher_outer_length} ${trencher_outer_width} ${trencher_outer_height}"/>
       </geometry>
       <material name="trencher_outer_color">
         <color rgba="${dark_grey}"/>
@@ -103,7 +128,7 @@
     <visual>
       <origin xyz="${trencher_inner_length/2} 0 0" rpy="0 0 0"/>
       <geometry>
-        <box size="${trencher_inner_length} ${trencher_inner_width} ${trencher_height}"/>
+        <box size="${trencher_inner_length} ${trencher_inner_width} ${trencher_inner_height}"/>
       </geometry>
       <material name="trencher_inner_color">
         <color rgba="${grey}"/>
@@ -113,15 +138,25 @@
 
 <!--Joints=========================================-->
 
-  <xacro:wheel name="front_left" />
-  <xacro:wheel name="front_right" />
-  <xacro:wheel name="back_left" />
-  <xacro:wheel name="back_right" />
+  <xacro:wheel name="front_left" mirror="-1"/>
+  <xacro:wheel name="front_right" mirror="1"/>
+  <xacro:wheel name="back_left" mirror="-1"/>
+  <xacro:wheel name="back_right" mirror="1"/>
+
+  <xacro:wheel_mount name="front_left_mount" />
+  <xacro:wheel_mount name="front_right_mount" />
+  <xacro:wheel_mount name="back_left_mount" />
+  <xacro:wheel_mount name="back_right_mount" />
 
   <xacro:wheel_Joint name="front_left" parent="chassis" child="front_left" x_pos="${wheel_offset+(chassis_cutout_length/2)}" mirror="1"/>
   <xacro:wheel_Joint name="front_right" parent="chassis" child="front_right" x_pos="${wheel_offset+(chassis_cutout_length/2)}" mirror="-1"/>
   <xacro:wheel_Joint name="back_left" parent="chassis" child="back_left" x_pos="${wheel_offset*-1}" mirror="1"/>
   <xacro:wheel_Joint name="back_right" parent="chassis" child="back_right" x_pos="${wheel_offset*-1}" mirror="-1"/>
+  
+  <xacro:wheel_mount_fixed name="front_left_fixed" child="front_left_mount" x_pos="${wheel_offset+(chassis_cutout_length/2)}" mirror="1"/>
+  <xacro:wheel_mount_fixed name="front_right_fixed" child="front_right_mount" x_pos="${wheel_offset+(chassis_cutout_length/2)}" mirror="-1"/>
+  <xacro:wheel_mount_fixed name="back_left_fixed" child="back_left_mount" x_pos="${wheel_offset*-1}" mirror="1"/>
+  <xacro:wheel_mount_fixed name="back_right_fixed" child="back_right_mount" x_pos="${wheel_offset*-1}" mirror="-1"/>
 
   <joint type="fixed" name="left_cutout_fixed">
     <origin xyz="${(chassis_length/2)+(chassis_cutout_length/2)} ${(chassis_width/2)-(chassis_cutout_width/2)} 0" rpy="0 0 0"/>
@@ -136,7 +171,7 @@
   </joint>
 
   <joint type="revolute" name="trencher_axle">
-    <origin  xyz="0 ${chassis_cutout_width*-1.5} ${trencher_mount_height+trencher_height}" rpy="0 0 0"/>
+    <origin  xyz="0 ${chassis_cutout_width*-1.5} ${(trencher_mount_height/2)+(trencher_outer_height)}" rpy="0 0 0"/>
     <child link="trencher_outer"/>
     <parent link="left_cutout"/>
     <axis xyz="0 1 0" rpy="0 0 0"/>

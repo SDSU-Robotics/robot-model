@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding="UTF-8"?>
 
-<robot name="transportation" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="excavation" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+<!--Dimension Macros=====================================-->
 <xacro:property name="wheel_height" value="-0.05"/>
 <xacro:property name="wheel_length" value="0.05"/>
 <xacro:property name="wheel_offset" value="0.11"/>
@@ -17,11 +18,12 @@
 <xacro:property name="trencher_inner_width" value="${chassis_width-(chassis_cutout_width*2)-0.025}"/>
 <xacro:property name="trencher_height" value="0.05"/>
 
-<!--Color Macros=======================================-->
+<!--Color Macros========================================-->
+<xacro:property name="dark_grey" value="0.5 0.5 0.5 1"/>
 <xacro:property name="grey" value="0.7 0.7 0.7 1"/>
 <xacro:property name="blue" value="0 0.3 0.8 1"/>
 
-<!--Shape Macros=======================================-->
+<!--Shape Macros========================================-->
 <xacro:macro name="wheel" params="name">
 <link name="${name}">
     <visual>
@@ -30,6 +32,7 @@
         <cylinder radius="0.1" length="${wheel_length}"/>
       </geometry>
       <material name="wheel_color">
+        <!--texture filename="file://$(find robot-model)/models/wheel_texture.jpeg"/-->
         <color rgba="${blue}"/>
       </material>
     </visual>
@@ -90,8 +93,8 @@
       <geometry>
         <box size="${trencher_outer_length} ${trencher_outer_width} ${trencher_height}"/>
       </geometry>
-      <material name="chassis_color">
-        <color rgba="${grey}"/>
+      <material name="trencher_outer_color">
+        <color rgba="${dark_grey}"/>
       </material>
     </visual>
   </link>
@@ -102,11 +105,13 @@
       <geometry>
         <box size="${trencher_inner_length} ${trencher_inner_width} ${trencher_height}"/>
       </geometry>
-      <material name="chassis_color">
+      <material name="trencher_inner_color">
         <color rgba="${grey}"/>
       </material>
     </visual>
   </link>
+
+<!--Joints=========================================-->
 
   <xacro:wheel name="front_left" />
   <xacro:wheel name="front_right" />

@@ -2,6 +2,11 @@
 
 <robot name="excavation_simple" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+<!--Macros-->
+<!--  Macros are constants that can be used to define any
+      aspect of the model.  They can define things like
+      values, colors, links, joints, transmissions, ect.-->
+
 <!--Dimension Macros=====================================-->
 <xacro:property name="wheel_height" value="-0.05"/>
 <xacro:property name="wheel_length" value="0.05"/>
@@ -103,7 +108,7 @@
 
 <!--Transmission Macros========================================-->
 <xacro:macro name="wheel_transmission" params="name joint">
-  <transmission name="${name}_transmission">
+  <transmission name="${name}_wheel_transmission">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="${joint}">
       <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
@@ -114,7 +119,13 @@
   </transmission>
 </xacro:macro>
 
-<!--Robot Definition====================================-->
+<!--Links====================================-->
+
+<!--  Links are the physical pieces of the model.  They
+      can be defined to have diffenet shapes, sizes, and
+      materials.  Meshes can be used to give links a 
+      completly custom appearance-->
+
 <link name='chassis'>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -197,6 +208,10 @@
 
 <!--Joints=========================================-->
 
+<!--  Joints connect links together.  Joints can be
+      of different types that dictate the type of 
+      motion they have-->
+
   <xacro:wheel_mount name="front_left_mount" />
   <xacro:wheel_mount name="front_right_mount" />
   <xacro:wheel_mount name="back_left_mount" />
@@ -251,6 +266,22 @@
 
 <!--Transmissions=========================================-->
 
+<!--  Transmissions allow joints to listen for ROS messages,
+      all transmissions must be added to a yaml file-->
+
   <xacro:wheel_transmission name="front_left" joint="front_left_axle"/>
+  <xacro:wheel_transmission name="front_right" joint="front_right_axle"/>
+  <xacro:wheel_transmission name="back_left" joint="back_left_axle"/>
+  <xacro:wheel_transmission name="back_right" joint="back_right_axle"/>
+
+  <transmission name="trencher_pivot_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="trencher_axle">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="trencher_axle_motor">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
 
 </robot>

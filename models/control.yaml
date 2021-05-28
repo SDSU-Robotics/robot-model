@@ -2,6 +2,22 @@
     type: joint_state_controller/JointStateController
     publish_rate: 50  
 
-  left_wheel_velocity_controller:
+  front_left_wheel_velocity_controller:
     type: velocity_controllers/JointVelocityController
-    joint: left_wheel_axle
+    joint: front_left_wheel_axle
+
+  front_right_wheel_velocity_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: front_right_wheel_axle
+
+  back_left_wheel_velocity_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: back_left_wheel_axle
+
+  back_right_wheel_velocity_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: back_right_wheel_axle
+
+  trencher_axle_velocity_controller:
+    type: velocity_controllers/JointVelocityController
+    joint: trencher_axle

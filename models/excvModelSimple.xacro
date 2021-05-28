@@ -1,0 +1,287 @@
+<?xml version='1.0' encoding="UTF-8"?>
+
+<robot name="excavation_simple" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!--Macros-->
+<!--  Macros are constants that can be used to define any
+      aspect of the model.  They can define things like
+      values, colors, links, joints, transmissions, ect.-->
+
+<!--Dimension Macros=====================================-->
+<xacro:property name="wheel_height" value="-0.05"/>
+<xacro:property name="wheel_length" value="0.05"/>
+<xacro:property name="wheel_scale" value="0.004"/>
+<xacro:property name="wheel_mount_width" value="0.05"/>
+<xacro:property name="wheel_offset" value="0.11"/>
+<xacro:property name="chassis_width" value="0.2"/>
+<xacro:property name="chassis_length" value="0.4"/>
+<xacro:property name="chassis_height" value="0.05"/>
+<xacro:property name="chassis_cutout_length" value="0.1"/>
+<xacro:property name="chassis_cutout_width" value="0.05"/>
+<xacro:property name="trencher_mount_height" value="0.1"/>
+<xacro:property name="trencher_outer_length" value="0.3"/>
+<xacro:property name="trencher_outer_width" value="${chassis_width-(chassis_cutout_width*2)}"/>
+<xacro:property name="trencher_outer_height" value="0.05"/>
+<xacro:property name="trencher_inner_length" value="0.3"/>
+<xacro:property name="trencher_inner_width" value="${chassis_width-(chassis_cutout_width*2)-0.025}"/>
+<xacro:property name="trencher_inner_height" value="0.045"/>
+<xacro:property name="hopper_length" value="0.1"/>
+<xacro:property name="hopper_width" value="0.15"/>
+<xacro:property name="hopper_height" value="0.1"/>
+<xacro:property name="hopper_mount_height" value="0.15"/>
+<xacro:property name="hopper_mount_size" value="0.05"/>
+
+<!--Color Macros========================================-->
+<xacro:property name="dark_grey" value="0.5 0.5 0.5 1"/>
+<xacro:property name="grey" value="0.7 0.7 0.7 1"/>
+<xacro:property name="blue" value="0 0.3 0.8 1"/>
+
+<!--Shape Macros========================================-->
+<xacro:macro name="wheel" params="name mirror">
+<link name="${name}">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 1.5707 ${mirror*1.5707}"/>
+      <geometry>
+        <cylinder radius="0.1" length="${wheel_length}"/>
+          <!--mesh filename="file://$(find robot-model)/models/meshes/wheel.stl" scale="${wheel_scale} ${wheel_scale} ${wheel_scale}"/-->
+      </geometry>
+      <material name="wheel_color">
+        <color rgba="${blue}"/>
+      </material>
+    </visual>
+  </link>
+</xacro:macro>
+
+<xacro:macro name="wheel_mount" params="name">
+<link name="${name}">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${wheel_mount_width} ${wheel_mount_width} ${wheel_height}"/>
+      </geometry>
+      <material name="wheel_mount_color">
+        <color rgba="${grey}"/>
+      </material>
+    </visual>
+  </link>
+</xacro:macro>
+
+<xacro:macro name="hopper_mount" params="name">
+  <link name="${name}_hopper_mount">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${hopper_mount_size} ${hopper_mount_size} ${hopper_mount_height+(hopper_height/2)}"/>
+      </geometry>
+      <material name="${name}_hopper_mount_color">
+        <color rgba="${grey}"/>
+      </material>
+    </visual>
+  </link>
+</xacro:macro>
+
+<!--Joint Macros========================================-->
+<xacro:macro name="wheel_Joint" params="name parent child x_pos mirror">
+  <joint type="continuous" name="${name}_axle">
+    <origin  xyz="${x_pos} ${((chassis_width/2)+(wheel_length/2))*mirror} ${wheel_height}" rpy="0 0 0"/>
+    <child link="${child}"/>
+    <parent link="${parent}"/>
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+  </joint>
+</xacro:macro>
+
+<xacro:macro name="wheel_mount_fixed" params="name child x_pos mirror">
+  <joint type="fixed" name="${name}">
+    <origin xyz="${x_pos} ${((chassis_width/2)-(wheel_mount_width/2))*mirror} ${wheel_height}" rpy="0 0 0"/>
+    <child link="${child}"/>
+    <parent link="chassis"/>
+  </joint>
+</xacro:macro>
+
+<xacro:macro name="hopper_mount_fixed" params="name child x_pos mirror">
+  <joint type="fixed" name="${name}_hopper_mount_fixed">
+    <origin xyz="${x_pos} ${((chassis_width/2)-(hopper_mount_size/2))*mirror} ${(chassis_height/2)+(hopper_mount_height/2)}" rpy="0 0 0"/>
+    <child link="${child}"/>
+    <parent link="chassis"/>
+  </joint>
+</xacro:macro>
+
+<!--Transmission Macros========================================-->
+<xacro:macro name="wheel_transmission" params="name joint">
+  <transmission name="${name}_wheel_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="${joint}">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="${name}_motor">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+</xacro:macro>
+
+<!--Links====================================-->
+
+<!--  Links are the physical pieces of the model.  They
+      can be defined to have diffenet shapes, sizes, and
+      materials.  Meshes can be used to give links a 
+      completly custom appearance-->
+
+<link name='chassis'>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+      </geometry>
+      <material name="chassis_color">
+        <color rgba="${grey}"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name='left_cutout'>
+    <visual>
+      <origin xyz="0 0 ${trencher_mount_height/2}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${chassis_cutout_length} ${chassis_cutout_width} ${chassis_height+trencher_mount_height}"/>
+      </geometry>
+      <material name="left_cutout_color">
+        <color rgba="${grey}"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name='right_cutout'>
+    <visual>
+      <origin xyz="0 0 ${trencher_mount_height/2}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${chassis_cutout_length} ${chassis_cutout_width} ${chassis_height+trencher_mount_height}"/>
+      </geometry>
+      <material name="right_cutout_color">
+        <color rgba="${grey}"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name='trencher_outer'>
+    <visual>
+      <origin xyz="${trencher_outer_length/2} 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${trencher_outer_length} ${trencher_outer_width} ${trencher_outer_height}"/>
+      </geometry>
+      <material name="trencher_outer_color">
+        <color rgba="${dark_grey}"/>
+      </material>
+    </visual>
+  </link>
+
+  <link name='trencher_inner'>
+    <visual>
+      <origin xyz="${trencher_inner_length/2} 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${trencher_inner_length} ${trencher_inner_width} ${trencher_inner_height}"/>
+      </geometry>
+      <material name="trencher_inner_color">
+        <color rgba="${grey}"/>
+      </material>
+    </visual>
+  </link>
+
+<link name='hopper'>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${hopper_length} ${hopper_width} ${hopper_height}"/>
+      </geometry>
+      <material name="hopper_color">
+        <color rgba="${blue}"/>
+      </material>
+    </visual>
+  </link>
+
+  <xacro:wheel name="front_left" mirror="-1"/>
+  <xacro:wheel name="front_right" mirror="1"/>
+  <xacro:wheel name="back_left" mirror="-1"/>
+  <xacro:wheel name="back_right" mirror="1"/>
+
+  <xacro:hopper_mount name="left" />
+  <xacro:hopper_mount name="right" />
+
+<!--Joints=========================================-->
+
+<!--  Joints connect links together.  Joints can be
+      of different types that dictate the type of 
+      motion they have-->
+
+  <xacro:wheel_mount name="front_left_mount" />
+  <xacro:wheel_mount name="front_right_mount" />
+  <xacro:wheel_mount name="back_left_mount" />
+  <xacro:wheel_mount name="back_right_mount" />
+
+  <xacro:wheel_Joint name="front_left" parent="chassis" child="front_left" x_pos="${wheel_offset+(chassis_cutout_length/2)}" mirror="1"/>
+  <xacro:wheel_Joint name="front_right" parent="chassis" child="front_right" x_pos="${wheel_offset+(chassis_cutout_length/2)}" mirror="-1"/>
+  <xacro:wheel_Joint name="back_left" parent="chassis" child="back_left" x_pos="${wheel_offset*-1}" mirror="1"/>
+  <xacro:wheel_Joint name="back_right" parent="chassis" child="back_right" x_pos="${wheel_offset*-1}" mirror="-1"/>
+  
+  <xacro:wheel_mount_fixed name="front_left_fixed" child="front_left_mount" x_pos="${wheel_offset+(chassis_cutout_length/2)}" mirror="1"/>
+  <xacro:wheel_mount_fixed name="front_right_fixed" child="front_right_mount" x_pos="${wheel_offset+(chassis_cutout_length/2)}" mirror="-1"/>
+  <xacro:wheel_mount_fixed name="back_left_fixed" child="back_left_mount" x_pos="${wheel_offset*-1}" mirror="1"/>
+  <xacro:wheel_mount_fixed name="back_right_fixed" child="back_right_mount" x_pos="${wheel_offset*-1}" mirror="-1"/>
+
+  <xacro:hopper_mount_fixed name="left" child="left_hopper_mount" x_pos="${(chassis_length/-2)+(hopper_mount_size/2)}" mirror="1"/>
+  <xacro:hopper_mount_fixed name="right" child="right_hopper_mount" x_pos="${(chassis_length/-2)+(hopper_mount_size/2)}" mirror="-1"/>
+
+  <joint type="fixed" name="left_cutout_fixed">
+    <origin xyz="${(chassis_length/2)+(chassis_cutout_length/2)} ${(chassis_width/2)-(chassis_cutout_width/2)} 0" rpy="0 0 0"/>
+    <child link="left_cutout"/>
+    <parent link="chassis"/>
+  </joint>
+
+  <joint type="fixed" name="right_cutout_fixed">
+    <origin xyz="${(chassis_length/2)+(chassis_cutout_length/2)} ${((chassis_width/2)-(chassis_cutout_width/2))*-1} 0" rpy="0 0 0"/>
+    <child link="right_cutout"/>
+    <parent link="chassis"/>
+  </joint>
+
+  <joint type="revolute" name="trencher_axle">
+    <origin  xyz="0 ${chassis_cutout_width*-1.5} ${(trencher_mount_height/2)+(trencher_outer_height)}" rpy="0 0 0"/>
+    <child link="trencher_outer"/>
+    <parent link="left_cutout"/>
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+    <limit upper="1" lower="-2.75" effort="0" velocity="1"/>
+  </joint>
+
+  <joint type="prismatic" name="trencher_extend">
+    <origin  xyz="0 0 0" rpy="0 0 0"/>
+    <child link="trencher_inner"/>
+    <parent link="trencher_outer"/>
+    <axis xyz="1 0 0" rpy="0 0 0"/>
+    <limit upper="${trencher_inner_length}" lower="0" effort="0" velocity="1"/>
+  </joint>
+
+  <joint type="fixed" name="hopper_cutout_fixed">
+    <origin xyz="${(chassis_length/-2)+(hopper_length/-2)} ${(chassis_width/2)-(hopper_width/2)} ${hopper_mount_height}" rpy="0 0 0"/>
+    <child link="hopper"/>
+    <parent link="chassis"/>
+  </joint>
+
+<!--Transmissions=========================================-->
+
+<!--  Transmissions allow joints to listen for ROS messages,
+      all transmissions must be added to a yaml file-->
+
+  <xacro:wheel_transmission name="front_left" joint="front_left_axle"/>
+  <xacro:wheel_transmission name="front_right" joint="front_right_axle"/>
+  <xacro:wheel_transmission name="back_left" joint="back_left_axle"/>
+  <xacro:wheel_transmission name="back_right" joint="back_right_axle"/>
+
+  <transmission name="trencher_pivot_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="trencher_axle">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="trencher_axle_motor">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </actuator>
+  </transmission>
+
+</robot>
